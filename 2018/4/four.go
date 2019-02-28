@@ -54,11 +54,9 @@ func readAllActions() actionSlice {
 
 func findSleeper(sortedActions actionSlice) {
 
-	timeAsleep := make(map[string]int)
+	timeAsleep := make(map[string][]int)
 	timeWentToSleep := -1
 	currentGuard := "-1"
-
-	sleepyGuardRange := make([]int, 60, 60)
 
 	for _, action := range sortedActions {
 		currentTime := action.time.Minute()
@@ -68,36 +66,31 @@ func findSleeper(sortedActions actionSlice) {
 		} else if action.verb == "fallsasleep" {
 			timeWentToSleep = currentTime
 		} else if action.verb == "wakesup" {
-			if currentGuard == "#401" {
-				for i := timeWentToSleep; i < currentTime; i++ {
-					sleepyGuardRange[i] = sleepyGuardRange[i] + 1
-				}
+			_, exists := timeAsleep[currentGuard]
+			if !exists {
+				timeAsleep[currentGuard] = make([]int, 60, 60)
 			}
-			timeAsleep[currentGuard] = (currentTime - timeWentToSleep) + timeAsleep[currentGuard]
+
+			for i := timeWentToSleep; i < currentTime; i++ {
+				timeAsleep[currentGuard][i] = timeAsleep[currentGuard][i] + 1
+			}
 			timeWentToSleep = -1
 		} else {
 			fmt.Println("herp derp - unknown verb", action.verb)
 		}
 	}
 
-	maxAsleep := 0
-	maxGuardNum := "-1"
-	for key, val := range timeAsleep {
-		if val > maxAsleep {
-			maxAsleep = val
-			maxGuardNum = key
+	maxAsleepCount := 0
+	sleepiestGuard := "-1"
+	sleepiestTime := -1
+	for guardNum, timeSlice := range timeAsleep {
+		for time, sleepCount := range timeSlice {
+			if sleepCount > maxAsleepCount {
+				maxAsleepCount = sleepCount
+				sleepiestTime = time
+				sleepiestGuard = guardNum
+			}
 		}
 	}
-
-	maxMinAsleep := -1
-	maxTimeAsleep := -1
-	for key, val := range sleepyGuardRange {
-		if val > maxTimeAsleep {
-			maxTimeAsleep = val
-			maxMinAsleep = key
-		}
-	}
-
-	fmt.Println(maxGuardNum, maxAsleep)
-	fmt.Println("maxMin asleep", maxMinAsleep, "num times asleep min", maxTimeAsleep)
+	fmt.Println("max sleep count", maxAsleepCount, "sleepiest time", sleepiestTime, "sleepiest guard", sleepiestGuard)
 }
