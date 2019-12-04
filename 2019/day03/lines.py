@@ -3,15 +3,27 @@ def main():
 	firstWire = directionsToLineSegments(directions[0])
 	secondWire = directionsToLineSegments(directions[1])
 
-	minDist = 9999999999 #uh, max int?
+	minTotalSteps = 9999999999 #uh, max int?
+	firstSteps = 0
+	lastFirst = (0,0)
 	for first in firstWire:
+		secondSteps = 0
+		lastSecond = (0,0)
 		for second in secondWire:
 			intersect = findIntersect(first, second)
+			
+			firstSteps += pointSteps(lastFirst, first[0])
+			secondSteps += pointSteps(lastSecond, second[0])
+
 			if intersect is not None:
-				manhattanDist = abs(intersect[0]) + abs(intersect[1])
-				print("intersection found", first, second, " at ", intersect, ' dist', manhattanDist)
-				minDist = min(minDist, manhattanDist)
-	print("min intersection is at " + str(minDist))
+				firstIntersectSteps = pointSteps(first[0], intersect)
+				secondIntersectSteps = pointSteps(second[0], intersect)
+				totalSteps = firstIntersectSteps + secondIntersectSteps + firstSteps + secondSteps
+				minTotalSteps = min(minTotalSteps, totalSteps)
+
+			lastFirst = first[0]
+			lastSecond = second[0]
+	print("min steps is " + str(minTotalSteps))
 
 def readDirections():
 	filepath = "full.txt"
@@ -45,6 +57,7 @@ def directionsToLineSegments(directions):
 
 	return segments
 
+#left and right are line segments
 def findIntersect(left, right):
 	#start of left pt
 	x1 = left[0][0]
@@ -59,7 +72,7 @@ def findIntersect(left, right):
 	x4 = right[1][0]
 	y4 = right[1][1]
 
-	print(x1, y1, x2, x2, x3, y3, x4, y4)
+	#print(x1, y1, x2, x2, x3, y3, x4, y4)
 
 	leftVert = False
 	rightVert = False
@@ -89,7 +102,17 @@ def findIntersect(left, right):
 			return (leftX, rightY)
 	return None
 
+def pointSteps(first, second):
+	firstX = first[0]
+	firstY = first[1]
 
+	secondX = second[0]
+	secondY = second[1]
+
+	xDist = abs(firstX - secondX)
+	yDist = abs(firstY - secondY)
+	return xDist + yDist
+	
 
 if __name__ == "__main__":
 	main()
