@@ -3,7 +3,7 @@ def main():
 	opsWithInput = []
 	[opsWithInput.append(op) for op in ops]
 
-	output = run(opsWithInput, False)
+	run(opsWithInput, False)
 
 # returns array of ops from the input
 def parse():
@@ -50,7 +50,7 @@ def run(ops, debugMode):
 			ops[destAddr] = left * right
 			programCtr += 4
 		elif ins.opCode == 3: # input
-			consoleIn = int(input("input requested"))
+			consoleIn = int(input("input requested "))
 			destAddr = ops[programCtr + 1]
 			ops[destAddr] = consoleIn
 			programCtr += 2
@@ -61,6 +61,58 @@ def run(ops, debugMode):
 			else:
 				print(ops[programCtr + 1])
 			programCtr += 2
+		elif ins.opCode == 5: # jmp if true
+			left = ops[programCtr + 1]
+			if ins.isParam1Positional:
+				left = ops[left]
+			right = ops[programCtr + 2]
+			if ins.isParam2Positional:
+				right = ops[right]
+			
+			if left != 0:
+				programCtr = right
+			else:
+				programCtr += 3
+		elif ins.opCode == 6: # jmp if false
+			left = ops[programCtr + 1]
+			if ins.isParam1Positional:
+				left = ops[left]
+			right = ops[programCtr + 2]
+			if ins.isParam2Positional:
+				right = ops[right]
+			
+			if left == 0:
+				programCtr = right
+			else:
+				programCtr += 3	
+		elif ins.opCode == 7: # less than
+			left = ops[programCtr + 1]
+			if ins.isParam1Positional:
+				left = ops[left]
+			right = ops[programCtr + 2]
+			if ins.isParam2Positional:
+				right = ops[right]
+			destAddr = ops[programCtr + 3]
+
+			if left < right:
+				ops[destAddr] = 1
+			else:
+				ops[destAddr] = 0
+			programCtr += 4
+		elif ins.opCode == 8: # less than
+			left = ops[programCtr + 1]
+			if ins.isParam1Positional:
+				left = ops[left]
+			right = ops[programCtr + 2]
+			if ins.isParam2Positional:
+				right = ops[right]
+			destAddr = ops[programCtr + 3]
+
+			if left == right:
+				ops[destAddr] = 1
+			else:
+				ops[destAddr] = 0
+			programCtr += 4
 		else:
 			print("invalid opcode " + str(ops[programCtr]) + " at " + str(programCtr))
 			return
@@ -70,8 +122,8 @@ def run(ops, debugMode):
 			input("iteration " + str(iterationCounter))
 			print("opCode: " + str(opCode) + " left: " + str(leftAddr) + " right: " + str(rightAddr) + " dest: " + str(destAddr))
 			print(ops)
-	print("halted, output at zero is" + str(ops[0]))
-	return ops[0]
+
+	return
 
 class Instruction:
 	def __init__(self, instruction):
