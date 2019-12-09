@@ -1,10 +1,8 @@
 from enum import Enum
 from collections import defaultdict
-
 class IntCodeVm:
 	OPCODES_WITH_LEFT = []
-	def __init__(self, filepath):
-		self.filepath = filepath
+	def __init__(self, filepath, program = ""):
 		self.programCtr = 0
 		self.iterationCounter = 0
 		self.readPause = False
@@ -18,11 +16,14 @@ class IntCodeVm:
 		self.__run()
 
 	# returns array of self.ops from the input
-	def parse(self):
+	def parse(self, filepath, program):
 		inputStr = ""
-		with open(self.filepath) as fp:
-			for count, line in enumerate(fp):
-				inputStr += line
+		if filepath:
+			with open(self.filepath) as fp:
+				for count, line in enumerate(fp):
+					inputStr += line
+		else:
+			inputStr = program
 
 		strOps = inputStr.split(",")
 		intOps = defaultdict(int)
@@ -39,8 +40,13 @@ class IntCodeVm:
 
 		# input needs to be loaded to memory before resuming
 		if self.readPause:
-			destAddr = self.ops[self.programCtr + 1]
-			self.ops[destAddr] = self.input
+			ins = Instruction(self.programCtr)
+			if ins.param1Mode == AddressMode.POSITIONAL:
+				destAddr = self.ops[self.programCtr + 1]
+				self.ops[destAddr] = self.input
+			elif ins.param1Mode == AddressMode.RELATIVE:
+				destAddr = self.ops[self.programCtr + 1] + self.relativeBase
+				self.ops[destAddr] = self.input
 			self.programCtr += 2
 			self.readPause = False
 		# output has already been dumped, and execution can simply resume
@@ -78,6 +84,8 @@ class IntCodeVm:
 					destAddr = self.ops[self.programCtr + 3]
 				elif ins.param3Mode == AddressMode.RELATIVE:
 					destAddr = right + self.relativeBase
+				else: 
+					print("should not be here.  cannot write immediate address?")
 
 			# --- START OPCODES --- #
 			if ins.opCode == 1: # add
@@ -93,11 +101,12 @@ class IntCodeVm:
 				self.writePause = True
 				if ins.param1Mode == AddressMode.POSITIONAL:
 					destAddr = self.ops[self.programCtr + 1]
-					#print("output", self.ops[destAddr])
 					self.output = self.ops[destAddr]
-				else:
-					#print("output", self.ops[self.programCtr + 1])
+				elif ins.param1Mode == AddressMode.IMMEDIATE:
 					self.output = self.ops[self.programCtr + 1]
+				elif ins.param1Mode == AddressMode.RELATIVE:
+					destAddr = self.ops[self.programCtr + 1] + self.relativeBase
+					self.output = self.ops[destAddr]
 				self.programCtr += 2
 				return
 			elif ins.opCode == 5: # jmp if true			
