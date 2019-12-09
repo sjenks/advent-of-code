@@ -1,4 +1,5 @@
 from enum import Enum
+from collections import defaultdict
 
 class IntCodeVm:
 	OPCODES_WITH_LEFT = []
@@ -24,8 +25,10 @@ class IntCodeVm:
 				inputStr += line
 
 		strOps = inputStr.split(",")
-		intOps = []
-		[intOps.append(int(op)) for op in strOps]
+		intOps = defaultdict(int)
+		for i in range(len(strOps)):
+			converted = int(strOps[i])
+			intOps[i] = converted
 
 		return intOps
 
@@ -60,18 +63,27 @@ class IntCodeVm:
 			left = self.ops[self.programCtr + 1]
 			if ins.param1Mode == AddressMode.POSITIONAL:
 				left = self.ops[left]
-			# but not all need 2 or
+			elif ins.param1Mode == AddressMode.RELATIVE:
+				left = self.ops[left + self.relativeBase]
+			# but not all need 2
 			if ins.opCode in [1, 2, 5, 6, 7, 8]:
 				right = self.ops[self.programCtr + 2]
 				if ins.param2Mode == AddressMode.POSITIONAL:
 					right = self.ops[right]
+				elif ins.param2Mode == AddressMode.RELATIVE:
+					right = self.ops[right + self.relativeBase]
+			# or 3.  Note that 3 is still an address
+			if ins.opCode in [1, 2, 7, 8]:
+				if ins.param3Mode == AddressMode.POSITIONAL:
+					destAddr = self.ops[self.programCtr + 3]
+				elif ins.param3Mode == AddressMode.RELATIVE:
+					destAddr = right + self.relativeBase
 
+			# --- START OPCODES --- #
 			if ins.opCode == 1: # add
-				destAddr = self.ops[self.programCtr + 3] #must be positional
 				self.ops[destAddr] = left + right
 				self.programCtr += 4
 			elif ins.opCode == 2: # mul
-				destAddr = self.ops[self.programCtr + 3]
 				self.ops[destAddr] = left * right
 				self.programCtr += 4
 			elif ins.opCode == 3: # input    
@@ -99,21 +111,20 @@ class IntCodeVm:
 				else:
 					self.programCtr += 3	
 			elif ins.opCode == 7: # less than
-				destAddr = self.ops[self.programCtr + 3]
-
 				if left < right:
 					self.ops[destAddr] = 1
 				else:
 					self.ops[destAddr] = 0
 				self.programCtr += 4
 			elif ins.opCode == 8: # less than
-				destAddr = self.ops[self.programCtr + 3]
-
 				if left == right:
 					self.ops[destAddr] = 1
 				else:
 					self.ops[destAddr] = 0
 				self.programCtr += 4
+			elif ins.opCode == 9: # modify relative base
+				self.relativeBase += left
+				self.programCtr += 2
 			else:
 				print("invalid opcode " + str(self.ops[self.programCtr]) + " at " + str(self.programCtr))
 				return
@@ -137,4 +148,4 @@ class Instruction:
 class AddressMode(Enum):
 	POSITIONAL = 0
 	IMMEDIATE = 1
-	OFFSET = 2
+	RELATIVE = 2
