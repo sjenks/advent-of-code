@@ -1,7 +1,6 @@
 from enum import Enum
 from collections import defaultdict
 class IntCodeVm:
-	OPCODES_WITH_LEFT = []
 	def __init__(self, filepath, program = ""):
 		self.programCtr = 0
 		self.iterationCounter = 0
@@ -12,14 +11,13 @@ class IntCodeVm:
 		self.input = -1
 		self.relativeBase = 0
 
-		self.ops = self.parse()
-		self.__run()
+		self.ops = self.parse(filepath, program)
 
 	# returns array of self.ops from the input
 	def parse(self, filepath, program):
 		inputStr = ""
 		if filepath:
-			with open(self.filepath) as fp:
+			with open(filepath) as fp:
 				for count, line in enumerate(fp):
 					inputStr += line
 		else:
@@ -33,34 +31,7 @@ class IntCodeVm:
 
 		return intOps
 
-	def resume(self):
-		if self.halted:
-			print("cannot resume halted program")
-			return 
-
-		# input needs to be loaded to memory before resuming
-		if self.readPause:
-			ins = Instruction(self.programCtr)
-			if ins.param1Mode == AddressMode.POSITIONAL:
-				destAddr = self.ops[self.programCtr + 1]
-				self.ops[destAddr] = self.input
-			elif ins.param1Mode == AddressMode.RELATIVE:
-				destAddr = self.ops[self.programCtr + 1] + self.relativeBase
-				self.ops[destAddr] = self.input
-			self.programCtr += 2
-			self.readPause = False
-		# output has already been dumped, and execution can simply resume
-		elif self.writePause:
-			self.writePause = False
-		else:
-			print("unexpected resume command")
-		self.__run()
-
-	def __run(self):
-		if self.readPause or self.writePause or self.halted:
-			print("paused!")
-			return
-
+	def run(self):
 		while self.ops[self.programCtr] != 99: # halt
 			fullInstruction = self.ops[self.programCtr]
 			ins = Instruction(fullInstruction)
@@ -83,7 +54,8 @@ class IntCodeVm:
 				if ins.param3Mode == AddressMode.POSITIONAL:
 					destAddr = self.ops[self.programCtr + 3]
 				elif ins.param3Mode == AddressMode.RELATIVE:
-					destAddr = right + self.relativeBase
+					destAddr = self.ops[self.programCtr + 3]
+					destAddr = destAddr + self.relativeBase
 				else: 
 					print("should not be here.  cannot write immediate address?")
 
@@ -94,9 +66,17 @@ class IntCodeVm:
 			elif ins.opCode == 2: # mul
 				self.ops[destAddr] = left * right
 				self.programCtr += 4
-			elif ins.opCode == 3: # input    
-				self.readPause = True        
-				return
+			elif ins.opCode == 3: # input 
+				#ip = int(input("input requested "))
+				yield
+				left = self.ops[self.programCtr + 1]
+				if ins.param1Mode == AddressMode.POSITIONAL:
+					self.ops[left] = self.input
+				elif ins.param1Mode == AddressMode.RELATIVE:
+					self.ops[left + self.relativeBase] = self.input
+				else:
+					print("wtf")
+				self.programCtr += 2
 			elif ins.opCode == 4: # output
 				self.writePause = True
 				if ins.param1Mode == AddressMode.POSITIONAL:
@@ -108,7 +88,7 @@ class IntCodeVm:
 					destAddr = self.ops[self.programCtr + 1] + self.relativeBase
 					self.output = self.ops[destAddr]
 				self.programCtr += 2
-				return
+				yield
 			elif ins.opCode == 5: # jmp if true			
 				if left != 0:
 					self.programCtr = right
@@ -125,7 +105,7 @@ class IntCodeVm:
 				else:
 					self.ops[destAddr] = 0
 				self.programCtr += 4
-			elif ins.opCode == 8: # less than
+			elif ins.opCode == 8: # eq to
 				if left == right:
 					self.ops[destAddr] = 1
 				else:

@@ -2,12 +2,15 @@ import itertools
 from IntCodeVm import IntCodeVm
 
 def main():
-	vm = IntCodeVm("C:\\Code\\advent-of-code\\2019\\day09\\input.txt")
+	vm = IntCodeVm("input.txt")
 	vm.input = 1
-	vm.resume()
-	while(not vm.halted):
+	for i in vm.run():
 		print(vm.output)
-		vm.resume()
+	
+	vm = IntCodeVm("input.txt")
+	vm.input = 2
+	for i in vm.run():
+		print(vm.output)
 
 if __name__ == "__main__":
 	main()
