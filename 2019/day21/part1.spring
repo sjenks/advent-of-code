@@ -1,0 +1,11 @@
+(-A∨-B∨-C)^D
+-(A^B^C)^D 
+Both T  and J start as false
+
+OR A J  #SET JUMP TO 1/A
+AND A J
+AND B J
+AND C J # JUMP NOW HAS (A AND B AND C)
+NOT J J # J NOW HAS NOT(A AND B AND C)
+AND D J
+WALK

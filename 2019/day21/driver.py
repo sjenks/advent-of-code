@@ -13,7 +13,7 @@ class Driver:
 					inputBuffer.append(10) # newline
 
 				c = inputBuffer.pop(0)
-				print(c)
+				#print(c)
 				vm.input = c
 			else:
 				outRead = vm.output
@@ -21,8 +21,10 @@ class Driver:
 					output = ''.join([chr(c) for c in outputBuffer])
 					print(output)
 					outputBuffer = []
-				else:
+				elif vm.output < 127 and vm.output > 0:
 					outputBuffer.append(vm.output)
+				else:
+					print('hull damage', vm.output)
 
 
 if __name__ == "__main__":
