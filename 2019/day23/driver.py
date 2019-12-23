@@ -11,6 +11,7 @@ class Driver:
 	def main(self):
 		code = self.readFile()
 
+		self.lastNatSend = None
 		self.vms = []
 		self.inited = []
 		self.numVms = 50
@@ -24,12 +25,14 @@ class Driver:
 		
 	def emulate(self):
 		#init with addresses
+		nat = None
 		gens = []
 		for i in range(self.numVms):
 			vm = self.vms[i]
 			gens.append(vm.run())
 
 		while True:
+			allReadPause = True
 			for i in range(self.numVms):
 				vm = self.vms[i]
 				next(gens[i])
@@ -45,17 +48,34 @@ class Driver:
 					else:
 						vm.input = -1
 				else: #write pause
+					allReadPause = False
 					dest = vm.output
 					next(gens[i])
 					packetX = vm.output
 					next(gens[i])
 					packetY = vm.output
 					if dest == 255:
-						print(packetX, packetY)
-						exit(1)
+						#print(packetX, packetY)
+						nat = (packetX, packetY)
 					else:
-						print("write to ", dest)
+						#print("write to ", dest)
 						self.network[dest].append((packetX, packetY))
+
+			allWritesEmpty = True
+			for i in range(self.numVms):
+				if len(self.network[i]) > 0:
+					allWritesEmpty = False
+			if allReadPause and allWritesEmpty:
+				if nat is not None:
+					# send to address 0
+					if self.lastNatSend == nat:
+						print("part 2", nat)
+						exit(1)
+					print("nat send", nat)
+					self.network[0].append(nat)
+					self.lastNatSend = nat
+					nat = None
+		
 
 
 if __name__ == "__main__":
