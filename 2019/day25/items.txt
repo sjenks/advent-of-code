@@ -1,0 +1,5 @@
+required in inventory:
+- ornament
+- space heater
+- festive hat
+- semiconductor
