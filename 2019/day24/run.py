@@ -1,19 +1,28 @@
 
 def main():
+	seen = set()
 	grid = parse()
-	for i in range(4):
-		print("after min", i)
+	counter = 0
+	while True:
+		print("after min", counter)
+		counter += 1
 		printGrid(grid)		
 		nextState = [x[:] for x in [['.'] * 5] * 5] 
 		for y in range(5):
 			for x in range(5):
 				if spotInfested((x,y), grid):
 					nextState[y][x] = '#'
+		bio = biodiversity(nextState)
+		print(bio)
+		if bio in seen:
+			print("found dupe", bio)
+			return
+		seen.add(bio)
 		grid = nextState
 
 
 def parse():
-	filename = "test.txt"
+	filename = "input.txt"
 	#list(string) casts into array of chars
 	lines = [list(line) for line in open(filename).read().split("\n")[:-1]]
 	return lines
@@ -54,6 +63,17 @@ def printGrid(grid):
 		for x in range(len(grid[y])):
 			s = s + grid[y][x]
 		print(s)
+
+def biodiversity(grid):
+	bioSum = 0
+	tileValue = 1
+	for y in range(len(grid)):
+		for x in range(len(grid[y])):
+			if grid[y][x] == '#':
+				bioSum += tileValue
+			tileValue *= 2
+	return bioSum
+
 
 def hasBug(position, grid):
 	if position[1] < 0 or position[1] >= len(grid):
