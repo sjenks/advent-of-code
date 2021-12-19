@@ -1,5 +1,7 @@
+import os
 def main():
-	filepath = "input.txt"
+	script_dir = os.path.dirname(os.path.realpath(__file__))
+	filepath = os.path.join(script_dir, "input.txt")
 	with open(filepath) as f:
 		lines = f.readlines()
 
