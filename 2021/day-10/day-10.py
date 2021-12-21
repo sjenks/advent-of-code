@@ -6,30 +6,19 @@ def main():
         lines = f.readlines()
 
     points = 0
+    all_points = []
     for line in lines:
-        error = find_error(line.strip())
+        error = find_corrupt(line.strip())
         pts = find_points(error)
-        print(line.strip() + "     " + str(error) + "    " + str(pts))
+        #print(line.strip() + "     " + str(error) + "    " + str(pts))
         points += pts
-    print(str(points))
+        all_points.append(points)
+    print(f'total points{points}')
+    all_points.sort()
+    half_idx = len(all_points) // 2
+    print(f'middle {all_points[half_idx]}')
 
-# def find_corrupt(line):
-#     points = {}
-#     points[''] = 0
-#     points['('] = 0
-#     points['['] = 0
-#     points['{'] = 0
-#     points['<'] = 0
-#     opening_paren = '([{<'
-
-#     for char in line:
-#         if char in opening_paren:
-#             points[char] = points[char] + 1
-#         else:
-#             if points[char
-#             points[char] = points[char] - 1
-
-def find_error(line):
+def find_corrupt(line):
     opening_paren = '([{<'
     close_paren = ')]}>'
 
@@ -45,18 +34,14 @@ def find_error(line):
                 opening = stack.pop()
                 expected_close = flip(opening)
                 if expected_close != char:
-                    print(f' expected {expected_close} but found {char} ')
+                    #print(f' expected {expected_close} but found {char} ')
                     return char
                     
     return ''
 
 def find_points(char):
-    points = {}
-    points[''] = 0
-    points[')'] = 3
-    points[']'] = 57
-    points['}'] = 1197
-    points['>'] = 25137
+    points = {'' : 0, ')': 3, ']': 57, '}': 1197, '>': 25137}
+
     return points[char]
 
 def flip(char):
