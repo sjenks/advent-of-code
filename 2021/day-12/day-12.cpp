@@ -28,16 +28,28 @@ void add_element(unordered_map<string, vector<string> >& paths, string left, str
 	(*path_vec_iter).second.push_back(right);
 }
  
-bool should_visit(deque<string> visited, string ele) {
+int should_visit(deque<string>& visited, string ele) {
 	if(isupper(ele.c_str()[0])){ // can always visit big caves
-		return true;
+		return 1;
 	}
+	if(visited.size() == 0) {
+		return 1;
+	}
+	string sm_dupe = "small_dupe";
+	string first_visited = visited.at(0);
+	bool has_small_dupe = (first_visited == sm_dupe);
 	for(auto iter = visited.begin(); iter != visited.end(); iter++ ) {
-		if(*iter == ele){ // do not visit small visited caves
-			return false;
+		if(*iter == ele){ // small visited caves
+			if(has_small_dupe) {
+				return 0; // only have one small dupe
+			}else if(ele == "start" || ele == "end") {
+				return 0;
+			} else {
+				return 2;
+			}
 		}
 	}
-	return true;
+	return 1;
 }	
 int main() {
 	ifstream input_stream;
@@ -81,8 +93,13 @@ int main() {
 
 		for(int i = 0; i < possible_paths_vec.size(); i++){
 			string s = possible_paths_vec[i];
-			if(should_visit(visited, s)){
+			if(should_visit(visited, s) == 1){
 				auto visit_copy = visited;
+				working.push_back(make_pair(s, visit_copy));
+			}
+			if(should_visit(visited, s) == 2){
+				auto visit_copy = visited;
+				visit_copy.push_front("small_dupe");
 				working.push_back(make_pair(s, visit_copy));
 			}
 		}
@@ -92,3 +109,4 @@ int main() {
 	return 0;
 }
 
+// not 8372
