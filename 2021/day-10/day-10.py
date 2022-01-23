@@ -5,18 +5,23 @@ def main():
     with open(filepath) as f:
         lines = f.readlines()
 
-    points = 0
-    all_points = []
+    corrupt_points = 0
+    incomplete_points = []
     for line in lines:
         error = find_corrupt(line.strip())
-        pts = find_points(error)
+        if
+        pts = find_corrupt_points(error)
         #print(line.strip() + "     " + str(error) + "    " + str(pts))
-        points += pts
-        all_points.append(points)
-    print(f'total points{points}')
+        corrupt_points += pts
+        all_points.append(pts)
+    print(f'total corrupt points{corrupt_points}')
+
     all_points.sort()
     half_idx = len(all_points) // 2
     print(f'middle {all_points[half_idx]}')
+
+def find_incomplete(line):
+    
 
 def find_corrupt(line):
     opening_paren = '([{<'
@@ -39,7 +44,7 @@ def find_corrupt(line):
                     
     return ''
 
-def find_points(char):
+def find_corrupt_points(char):
     points = {'' : 0, ')': 3, ']': 57, '}': 1197, '>': 25137}
 
     return points[char]
