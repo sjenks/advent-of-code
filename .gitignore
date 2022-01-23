@@ -1,5 +1,6 @@
 *.exe
 debug
 
+*.dSYM
 *.class
 *.pyc
