@@ -9,24 +9,47 @@ def main():
     incomplete_points = []
     for line in lines:
         error = find_corrupt(line.strip())
-        if
         pts = find_corrupt_points(error)
-        #print(line.strip() + "     " + str(error) + "    " + str(pts))
         corrupt_points += pts
-        all_points.append(pts)
-    print(f'total corrupt points{corrupt_points}')
 
-    all_points.sort()
-    half_idx = len(all_points) // 2
-    print(f'middle {all_points[half_idx]}')
+        if pts == 0:
+            incomplete_pt = find_incomplete_points(line.strip())
+            incomplete_points.append(incomplete_pt)
 
-def find_incomplete(line):
+    print(f'corrupt points {corrupt_points}')
+    incomplete_points.sort()
+    print(incomplete_points)
+    half_idx = len(incomplete_points) // 2
+    print(f'middle {incomplete_points[half_idx]}')
+    
+def find_incomplete_points(line):
+    opening_paren = '([{<'
+    
+    stack = []
+    for char in line:
+        if char in opening_paren:
+            stack.append(char)
+        else:
+            if len(stack) == 0:
+                return ''
+            else: 
+                opening = stack.pop()
+                expected_close = flip(opening)
+                if expected_close != char:
+                    break
+    pts_map = {')' : 1, ']': 2, '}': 3, '>': 4}
+    points = 0
+    for char in reversed(stack):
+        points = points * 5
+        close = flip(char)
+        points += pts_map[close]
+
+    return points
     
 
 def find_corrupt(line):
     opening_paren = '([{<'
-    close_paren = ')]}>'
-
+    
     stack = []
     for char in line:
         if char in opening_paren:
@@ -55,14 +78,6 @@ def flip(char):
     points['['] = ']'
     points['{'] = '}'
     points['<'] = '>'
-    return points[char]
-
-def flop_open(char):
-    points = {}
-    points[')'] = '('
-    points[']'] = '['
-    points['}'] = '{'
-    points['>'] = '<'
     return points[char]
                 
 def idx(char, string):
