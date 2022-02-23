@@ -9,6 +9,7 @@
 using namespace std;
 
 pair<int, int> fold_point(pair<int, int>& point, pair<string, int>& fold);
+vector<pair<int, int>> dedupe(vector<pair<int, int>>& in);
 
 int main(void) {
 	string filename( "input.txt");
@@ -36,22 +37,49 @@ int main(void) {
 		folds.push_back(fold_pair);
 	}
 
-	vector<pair<int, int> > next_points;
-	auto first_fold = folds.at(0);
+	for(auto fold : folds) {
+		vector<pair<int, int> > next_points;
+		auto first_fold = folds.at(0);
+		for(auto point : points) {
+			auto folded_point = fold_point(point, fold);
+
+			next_points.push_back(folded_point);
+		}
+		points = dedupe(next_points);
+	}
+
+	///// print
+	char plot[100][100];
+	for(int x = 0; x < 100; x++) {
+		for(int y = 0; y < 100; y++) {
+			plot[y][x] = ' ';
+		}
+	}
 	for(auto point : points) {
-		auto folded_point = fold_point(point, first_fold);
-		cout << point.first << " " << point.second << endl;
-
-		next_points.push_back(folded_point);
+		//cout << point.first << " " << point.second << endl;
+		plot[point.second][point.first] = 'X';
 	}
 
-	set<pair<int, int> > point_set;
-	for(auto point : next_points){
-		point_set.insert(point);
+	for(int x = 70; x >= 0; x--) {
+		for(int y = 20; y >= 0; y--) {
+			cout << plot[y][x];
+		}
+		cout << endl;
 	}
-	cout << "num points" << point_set.size() << endl;
 
 	return 0;
+}
+
+vector<pair<int, int>> dedupe(vector<pair<int, int>>& in) {
+	set<pair<int, int> > point_set;
+	for(auto point : in){
+		point_set.insert(point);
+	}
+	vector<pair<int, int>> res;
+	for(auto point : point_set) {
+		res.push_back(point);
+	}
+	return res;
 }
 
 pair<int, int> fold_point(pair<int, int>& point, pair<string, int>& fold) {
