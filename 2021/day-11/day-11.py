@@ -10,15 +10,20 @@ def main():
         grid.append([int(l) for l in line.strip()])
     print(grid)
     flash_sum = 0
-    for i in range(100):
+    for i in range(500):
+        print(i)
         print('-----------------')
         print(grid)
         grid, flashes = next_iteration(grid)
+        if flashes ==  100:
+            print('all flashing!')
+            print(i)
+            break
         flash_sum += flashes
 
     print('---')
     print(flash_sum)
-        
+
 
 def next_iteration(grid):
     next = []
